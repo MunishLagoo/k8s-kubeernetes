@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "k8s-helm-roboshop.fullname" . }}
   labels:
-    {{- include "roboshop.labels" . | nindent 4 }}
+    {{- include "k8s-helm-roboshop.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "roboshop.fullname" . }}
+    name: {{ include "k8s-helm-roboshop.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

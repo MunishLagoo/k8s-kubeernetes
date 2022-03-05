@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "k8s-helm-roboshop.fullname" . }}
   labels:
-    {{- include "roboshop.labels" . | nindent 4 }}
+    {{- include "k8s-helm-roboshop.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "roboshop.selectorLabels" . | nindent 6 }}
+      {{- include "k8s-helm-roboshop.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,33 +18,33 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "roboshop.selectorLabels" . | nindent 8 }}
+        {{- include "k8s-helm-roboshop.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ .Release.Name }}
+      serviceAccountName: {{ include "k8s-helm-roboshop.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Values.appName }}
+        - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{.Values.service.containerPort}}
+              containerPort: 80
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /health
-              port: {{.Values.service.containerPort}}
+              path: /
+              port: http
           readinessProbe:
             httpGet:
-              path: /health
-              port: {{.Values.service.containerPort}}
+              path: /
+              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
